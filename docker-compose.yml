@@ -1,0 +1,38 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy   # la API no arranca hasta que Mongo esté listo
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGO_URI: mongodb://mongo:27017/shipnow
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-5}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-change-me-in-production}
+    volumes:
+      - uploads-data:/app/uploads
+      - logs-data:/app/logs
+
+volumes:
+  mongo-data:
+  uploads-data:
+  logs-data:

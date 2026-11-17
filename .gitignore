@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+!.env.example
+coverage/
+.nyc_output/
+*.log
+logs/*
+!logs/.gitkeep
+uploads/*
+!uploads/.gitkeep
+tmp/
+.DS_Store
